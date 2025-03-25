@@ -1,0 +1,23 @@
+{
+  "name": "wealthbot",
+  "version": "1.0.0",
+  "description": "money income/outcome app",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint . --fix",
+    "format": "prettier --write .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "money"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "node-fetch": "^3.3.2",
+    "openai": "^4.89.0",
+    "sqlite3": "^5.1.7",
+    "telegraf": "^4.16.3"
+  }
+}
