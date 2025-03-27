@@ -30,6 +30,8 @@ const createDbTables = (db) => {
         rate REAL,
         PRIMARY KEY (currency, date)
       )`);
+
+    // туду: добавить  operationType TEXT NOT NULL, и обработать фиат/крипто
   });
 };
 

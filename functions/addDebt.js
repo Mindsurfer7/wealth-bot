@@ -1,16 +1,15 @@
-const { debtSystemMessage } = require('../consts/consts');
+const { debtSystemMessage, ALLOWED_CURRENCIES } = require('../consts/consts');
 const getExchangeRate = require('./getExchangeRate');
+const sendDebts = require('./sendDebts');
 
 const processDebt = async (text, db, openai, ctx) => {
   try {
-    // Проверяем, что текст передан
     if (!text || typeof text !== 'string') {
       throw new Error('Text must be a non-empty string');
     }
 
     console.log('Processing debt with text:', text);
 
-    // Парсим текст через OpenAI
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -21,22 +20,29 @@ const processDebt = async (text, db, openai, ctx) => {
     });
 
     const data = JSON.parse(response.choices[0].message.content);
-    console.log('Parsed debt data:', data);
 
-    // Добавляем дату и user_id
+    if (
+      !data.currency ||
+      !ALLOWED_CURRENCIES.includes(data.currency.toUpperCase())
+    ) {
+      throw new Error(
+        `Используй только ${ALLOWED_CURRENCIES.join(
+          ', ',
+        )}, другие валюты не поддерживаются!`,
+      );
+    }
+
     data.date = new Date().toISOString().split('T')[0];
     const userId = ctx.chat.id;
     console.log('userId:', userId, 'date:', data.date);
 
     try {
-      // Получаем курс валюты
       const rate = await getExchangeRate(data.currency, db);
       data.converted_amount = data.amount / rate;
       console.log(
         `Converted amount for ${data.currency}: ${data.converted_amount} RUB (rate: ${rate})`,
       );
 
-      // Сохраняем долг в базу с user_id
       await new Promise((resolve, reject) => {
         db.run(
           `INSERT INTO debts (user_id, date, type, name, amount, currency, converted_amount, description) 
@@ -69,10 +75,12 @@ const processDebt = async (text, db, openai, ctx) => {
           2,
         )} RUB)`,
       );
+
+      // Показываем долги только того же типа, что был добавлен
+      sendDebts(db, ctx, data.type);
     } catch (e) {
       console.error('Error getting exchange rate:', e);
 
-      // Сохраняем долг без converted_amount
       data.converted_amount = null;
       await new Promise((resolve, reject) => {
         db.run(
@@ -105,6 +113,9 @@ const processDebt = async (text, db, openai, ctx) => {
       ctx.reply(
         `Ошибка получения курса: ${e.message}. Долг сохранён, повторите позже с /retry`,
       );
+
+      // Показываем долги того же типа, что был добавлен
+      sendDebts(db, ctx, data.type);
     }
   } catch (e) {
     console.error('Error in processDebt:', e);

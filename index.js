@@ -17,6 +17,7 @@ const confirmTx = require('./functions/confirmTx');
 const sendTodayReport = require('./functions/sendTodayReport');
 const sendMonthReport = require('./functions/sendMonthReport');
 const processVoice = require('./functions/processVoice');
+const sendDebts = require('./functions/sendDebts');
 
 const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
@@ -27,6 +28,24 @@ const db = new sqlite3.Database('./finance.db');
 const pendingTransactions = {};
 
 createDbTables(db);
+
+bot.telegram.setMyCommands([
+  { command: 'start', description: 'Запустить б bota' },
+  {
+    command: 'debt',
+    description: 'Добавить долг (пример: /debt owed Алиса 5000 RUB)',
+  },
+  {
+    command: 'debts',
+    description: 'Показать долги (пример: /debts owed или /debts lent)',
+  },
+  {
+    command: 'report',
+    description: 'Показать отчёт за месяц (пример: /report USD)',
+  },
+  { command: 'today', description: 'Показать отчёт за сегодня' },
+  // { command: 'retry', description: 'Обновить транзакции с неподтверждённым курсом' },
+]);
 
 bot.command('start', (ctx) => {
   ctx.reply(START_MESSAGE, { parse_mode: 'Markdown' });
@@ -45,6 +64,21 @@ bot.on('message', async (ctx) => {
   if (text && text.startsWith('/report')) {
     const targetCurrency = text.split(' ')[1];
     await sendMonthReport(db, ctx, targetCurrency);
+  }
+
+  if (text && text.startsWith('/debt')) {
+    const text = ctx.message.text.replace('/debt ', '');
+    await processDebt(text, db, openai, ctx);
+  }
+
+  if (text && text.startsWith('/debts')) {
+    const type = text.split(' ')[1];
+    console.log(`Command /debts with type: ${type}`);
+    sendDebts(db, ctx, type);
+  }
+
+  if (text && text.startsWith('/today')) {
+    sendTodayReport(db, ctx);
   }
 
   if (text && text.startsWith('/')) {
@@ -90,15 +124,6 @@ bot.command('retry', (ctx) => {
       ctx.reply('Все транзакции обновлены');
     },
   );
-});
-
-bot.command('debt', async (ctx) => {
-  const text = ctx.message.text.replace('/debt ', '');
-  await processDebt(text, db, openai, ctx);
-});
-
-bot.command('today', async (ctx) => {
-  sendTodayReport(db, ctx);
 });
 
 bot.action(/confirm_(\d+)/, async (ctx) => {

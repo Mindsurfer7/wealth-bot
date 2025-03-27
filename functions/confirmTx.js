@@ -25,7 +25,7 @@ const confirmTx = async (transaction, ctx) => {
       ctx.editMessageText(
         ctx.callbackQuery.message.text.replace('Подтвердите', 'Подтверждена'),
       );
-      ctx.reply('Да, добавлено в базу данных ✔️');
+      ctx.reply('Добавлено в базу данных ✅');
       sendTodayReport(transactionDb, transactionCtx);
     },
   );

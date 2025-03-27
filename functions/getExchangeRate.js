@@ -1,5 +1,9 @@
 const { default: axios } = require('axios');
-const { CRYPTO_CURRENCIES } = require('../consts/consts');
+const {
+  CRYPTO_CURRENCIES,
+  ALLOWED_CURRENCIES,
+  CURRENCY_MAP,
+} = require('../consts/consts');
 
 // Получение курса валют
 async function getExchangeRate(currency, db) {
@@ -9,21 +13,28 @@ async function getExchangeRate(currency, db) {
       throw new Error('Currency must be a non-empty string');
     }
 
-    const today = new Date().toISOString().split('T')[0];
-    console.log(`Fetching exchange rate for ${currency} on ${today}`); // Отладочный лог
+    if (!ALLOWED_CURRENCIES.includes(currency.toUpperCase())) {
+      throw new Error(
+        `Используй только ${ALLOWED_CURRENCIES.join(
+          ', ',
+        )}, другие валюты не поддерживаются!`,
+      );
+    }
 
-    // Если валюта — криптовалюта
+    const today = new Date().toISOString().split('T')[0];
+    const currencyLabel = CURRENCY_MAP[currency];
+    console.log(`Fetching exchange rate for ${currency} on ${today}`);
+
     if (CRYPTO_CURRENCIES.includes(currency)) {
       console.log(`Fetching crypto rate for ${currency} from CoinGecko`);
       const response = await axios.get(
-        `https://api.coingecko.com/api/v3/simple/price?ids=${currency.toLowerCase()}&vs_currencies=rub`,
+        `https://api.coingecko.com/api/v3/simple/price?ids=${currencyLabel}&vs_currencies=rub`,
       );
 
-      // Проверяем, что ответ содержит нужные данные
       if (
         !response.data ||
-        !response.data[currency.toLowerCase()] ||
-        !response.data[currency.toLowerCase()].rub
+        !response.data[currencyLabel] ||
+        !response.data[currencyLabel].rub
       ) {
         throw new Error(
           `Invalid response from CoinGecko for ${currency}: ${JSON.stringify(
@@ -32,9 +43,13 @@ async function getExchangeRate(currency, db) {
         );
       }
 
-      const rate = response.data[currency.toLowerCase()].rub;
+      const rate = response.data[currencyLabel].rub;
       console.log(`Crypto rate for ${currency}: ${rate} RUB`);
       return rate;
+      // return {
+      //   rate,
+      //   operationType: 'crypto',
+      // };
     }
 
     // Для обычных валют
@@ -52,6 +67,10 @@ async function getExchangeRate(currency, db) {
           if (row) {
             console.log(`Rate found in database for ${currency}: ${row.rate}`);
             return resolve(row.rate);
+            // return resolve({
+            //   rate: row.rate,
+            //   operationType: 'fiat', //bug, needs to update the db
+            // });
           }
 
           // Если курса нет в базе, запрашиваем его
@@ -89,7 +108,12 @@ async function getExchangeRate(currency, db) {
                   );
                 }
                 console.log(`Rate for ${currency} saved to database: ${rate}`);
-                resolve(rate);
+                resolve(row.rate);
+
+                // resolve({
+                //   rate,
+                //   operationType: 'fiat',
+                // });
               },
             );
           } catch (e) {
@@ -112,44 +136,3 @@ async function getExchangeRate(currency, db) {
 }
 
 module.exports = getExchangeRate;
-
-// const { default: axios } = require('axios');
-// const { CRYPTO_CURRENCIES } = require('../consts/consts');
-
-// // Получение курса валют
-// async function getExchangeRate(currency, db) {
-//   const today = new Date().toISOString().split('T')[0];
-
-//   if (CRYPTO_CURRENCIES.includes(currency)) {
-//     const response = await axios.get(
-//       `https://api.coingecko.com/api/v3/simple/price?ids=${currency.toLowerCase()}&vs_currencies=rub`,
-//     );
-//     return response.data[currency.toLowerCase()].rub;
-//   } else {
-//     return new Promise((resolve, reject) => {
-//       console.log('before db ', db);
-//       db.get(
-//         `SELECT rate FROM exchange_rates WHERE currency = ? AND date = ?`,
-//         [currency, today],
-//         async (err, row) => {
-//           if (err) reject(err);
-//           if (row) {
-//             resolve(row.rate);
-//           } else {
-//             const response = await axios.get(
-//               `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/rub.json`,
-//             );
-//             const rate = response.data.rub[currency.toLowerCase()];
-//             db.run(
-//               `INSERT INTO exchange_rates (currency, date, rate) VALUES (?, ?, ?)`,
-//               [currency, today, rate],
-//             );
-//             resolve(rate);
-//           }
-//         },
-//       );
-//     });
-//   }
-// }
-
-// module.exports = getExchangeRate;

@@ -26,17 +26,38 @@ const START_MESSAGE = `
   *Команды:*
   - /start — Показать это сообщение
   - /report <валюта> — Отчет за месяц (пример: /report USD)
-  - /retry — Обновить транзакции без курса
-  - /debt <описание> — Добавить долг (пример: /debt owed Алиса 5000 RUB)
+  - /debt <описание> — Добавить займ/долг (Пример: /debt owed Васян 5000 RUB)
+
+  Занял - owed, одолжил - lent 
   
-  *Ввод:*
+  *Ввод дохода/расхода:*
   - Голосом: "Потратил 1200 тенге на такси"
-  - Текстом: "трата 500 RUB еда"
+  - Текстом: "зарплата 100к рублей"
+
+Так как ввод обрабатывается через ИИ, можно говорить и сленгом (типа, 100к руб), а ИИ определит категорию, валюту и тд.
   `;
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const CRYPTO_CURRENCIES = ['BTC', 'ETH', 'SOL'];
+const CRYPTO_CURRENCIES = ['BTC', 'ETH', 'SOL', 'XRP', 'DOT', 'STRK'];
+const ALLOWED_CURRENCIES = [
+  'RUB',
+  'KZT',
+  'USD',
+  'EUR',
+  'BTC',
+  'ETH',
+  'SOL',
+  'XRP',
+  'DOT',
+  'STRK',
+];
+
+const CURRENCY_MAP = {
+  SOL: 'solana',
+  ETH: 'ethereum',
+  BTC: 'bitcoin',
+};
 
 module.exports = {
   START_MESSAGE,
@@ -45,6 +66,8 @@ module.exports = {
   OPENAI_API_KEY,
   BOT_TOKEN,
   CRYPTO_CURRENCIES,
+  ALLOWED_CURRENCIES,
+  CURRENCY_MAP,
 };
 
 //   *Поля базы данных:*
