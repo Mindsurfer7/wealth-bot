@@ -4,7 +4,7 @@ const { ALLOWED_CURRENCIES } = require('../consts/consts');
 const getTxTypeName = require('../utils/getTxTypeName');
 
 const sendMonthReport = async (db, ctx, targetCurrency) => {
-  const month = new Date().toISOString().slice(0, 7);
+  const month = new Date().toISOString().slice(0, 7).replace(/-/g, '.');
   const userId = ctx.chat.id;
   console.log(targetCurrency, 'targetCurrency');
 
