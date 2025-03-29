@@ -29,19 +29,15 @@ const sendDebts = (db, ctx, type) => {
     }
 
     // Формируем таблицу долгов
-    let table =
-      '| Дата       | Тип     | Имя     | Сумма   | Валюта | Сумма (RUB) | Описание       |\n';
-    table +=
-      '|------------|---------|---------|---------|--------|-------------|----------------|\n';
+    let table = '| Дата      | Тип   | Имя   | Сумма | Валюта | RUB|\n';
+    table += '|-----------|-------|-------|-------|--------|-----|\n';
 
     for (const row of rows) {
       const typeText = row.type === 'owed' ? 'должен' : 'одолжил';
       const convertedAmount = row.converted_amount
-        ? row.converted_amount.toFixed(2)
+        ? row.converted_amount
         : 'N/A';
-      table += `| ${row.date} | ${typeText} | ${row.name} | ${row.amount} | ${
-        row.currency
-      } | ${convertedAmount} | ${row.description || 'N/A'} |\n`;
+      table += `| ${row.date} | ${typeText} | ${row.name} | ${row.amount} | ${row.currency}   | ${convertedAmount}   |\n`;
     }
 
     console.log('Generated debts table:', table);

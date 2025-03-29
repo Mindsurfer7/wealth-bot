@@ -1,3 +1,38 @@
+// TODO LIST
+// Удалить описание из таблиц
+// Починить цены на крипту
+
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const CRYPTO_CURRENCIES = ['BTC', 'ETH', 'SOL', 'XRP', 'DOT', 'STRK'];
+
+const OPERATION_CATEGORY_MAP = {
+  expense: 'трата',
+  income: 'доход',
+  transfer: 'перевод',
+  investment: 'инвестиция',
+};
+
+const CURRENCY_MAP = {
+  SOL: 'solana',
+  ETH: 'ethereum',
+  BTC: 'bitcoin',
+};
+
+const ALLOWED_CURRENCIES = [
+  'RUB',
+  'KZT',
+  'USD',
+  'EUR',
+  'ILS',
+  'BTC',
+  'ETH',
+  'SOL',
+  'XRP',
+  'DOT',
+  'STRK',
+];
+
 const systemMessage = `Ты — помощник, который преобразует текст о финансовых транзакциях в структурированный JSON. Текст может содержать информацию о доходах, расходах, трансферах или инвестициях. Твоя задача — извлечь тип транзакции, сумму, валюту, категорию и описание. Поддерживаемые валюты: RUB, KZT, USD, EUR, BTC, ETH, SOL и другие. Категории: медицина, спорт, еда, транспорт, прочее, аренда, другое, развлечения, связь, бизнес, зарплата, инвестиции. Если что-то не указано, оставь поле пустым или используй значение по умолчанию.
   
   Формат ответа должен быть чистым JSON без дополнительных символов или обертки (например, без \`\`\`json или других тегов Markdown):
@@ -37,28 +72,6 @@ const START_MESSAGE = `
 Так как ввод обрабатывается через ИИ, можно говорить и сленгом (типа, 100к руб), а ИИ определит категорию, валюту и тд.
   `;
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const CRYPTO_CURRENCIES = ['BTC', 'ETH', 'SOL', 'XRP', 'DOT', 'STRK'];
-const ALLOWED_CURRENCIES = [
-  'RUB',
-  'KZT',
-  'USD',
-  'EUR',
-  'BTC',
-  'ETH',
-  'SOL',
-  'XRP',
-  'DOT',
-  'STRK',
-];
-
-const CURRENCY_MAP = {
-  SOL: 'solana',
-  ETH: 'ethereum',
-  BTC: 'bitcoin',
-};
-
 module.exports = {
   START_MESSAGE,
   systemMessage,
@@ -67,6 +80,7 @@ module.exports = {
   BOT_TOKEN,
   CRYPTO_CURRENCIES,
   ALLOWED_CURRENCIES,
+  OPERATION_CATEGORY_MAP,
   CURRENCY_MAP,
 };
 

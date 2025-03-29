@@ -1,8 +1,11 @@
 const { Markup } = require('telegraf');
 const getExchangeRate = require('./getExchangeRate');
-const { ALLOWED_CURRENCIES } = require('../consts/consts');
+const { ALLOWED_CURRENCIES, CRYPTO_CURRENCIES } = require('../consts/consts');
+const getTxTypeName = require('../utils/getTxTypeName');
 
 async function addTransaction(ctx, data, db, pendingTransactions) {
+  const operationTypeCrypto = CRYPTO_CURRENCIES.includes(data.currency);
+
   try {
     if (!ALLOWED_CURRENCIES.includes(data.currency.toUpperCase())) {
       throw new Error(
@@ -13,9 +16,9 @@ async function addTransaction(ctx, data, db, pendingTransactions) {
     }
 
     data.date = data.date || new Date().toISOString().split('T')[0];
-    const { rate, operationType } = await getExchangeRate(data.currency, db);
+    const rate = await getExchangeRate(data.currency, db);
 
-    if (operationType === 'crypto') {
+    if (operationTypeCrypto) {
       data.converted_amount = data.amount * rate;
     } else {
       data.converted_amount = data.amount / rate;
@@ -25,9 +28,9 @@ async function addTransaction(ctx, data, db, pendingTransactions) {
     const userId = ctx.chat.id; // Получаем user_id из ctx
     pendingTransactions[transactionId] = { ctx, data, db, userId }; // Сохраняем user_id
 
-    const message = `Подтвердите транзакцию: ${
-      data.type === 'expense' ? 'трата' : data.type
-    }: ${data.amount} ${data.currency} в категории ${
+    const message = `Подтвердите транзакцию: ${getTxTypeName(data.type)}: ${
+      data.amount
+    } ${data.currency} в категории ${
       data.category
     } (${data.converted_amount.toFixed(2)} RUB)`;
     ctx.reply(

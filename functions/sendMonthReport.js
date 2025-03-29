@@ -1,6 +1,7 @@
 const fs = require('fs');
 const getExchangeRate = require('./getExchangeRate');
 const { ALLOWED_CURRENCIES } = require('../consts/consts');
+const getTxTypeName = require('../utils/getTxTypeName');
 
 const sendMonthReport = async (db, ctx, targetCurrency) => {
   const month = new Date().toISOString().slice(0, 7);
@@ -41,9 +42,9 @@ const sendMonthReport = async (db, ctx, targetCurrency) => {
 
       for (const row of rows) {
         const targetAmount = row.converted_amount * rateToTarget;
-        table += `| ${row.date} | ${row.type} | ${row.amount} | ${
-          row.currency
-        } | ${targetAmount.toFixed(2)} | ${row.category} |\n`;
+        table += `| ${row.date} | ${getTxTypeName(row.type)} | ${
+          row.amount
+        } | ${row.currency} | ${targetAmount.toFixed(2)} | ${row.category} |\n`;
         if (row.type === 'income') totalEarned += targetAmount;
         if (row.type === 'expense') totalSpent += targetAmount;
       }

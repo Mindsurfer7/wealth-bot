@@ -1,3 +1,5 @@
+const getTxTypeName = require('../utils/getTxTypeName');
+
 const sendTodayReport = (db, ctx) => {
   const today = new Date().toISOString().split('T')[0];
   const userId = ctx.chat.id; // Получаем user_id
@@ -12,17 +14,15 @@ const sendTodayReport = (db, ctx) => {
         return ctx.reply('Сегодня нет транзакций.');
       }
 
-      let table =
-        '| Дата       | Тип     | Сумма   | Валюта | Сумма (RUB) | Категория    | Описание       |\n';
-      table +=
-        '|------------|---------|---------|--------|-------------|--------------|----------------|\n';
+      let table = '| Тип | Сумма | Валюта | RUB | Категория |\n';
+      table += '|-----|-------|--------|-----|-----------|\n';
 
       for (const row of rows) {
-        table += `| ${row.date} | ${row.type} | ${row.amount} | ${
+        table += `| ${getTxTypeName(row.type)} | ${row.amount} | ${
           row.currency
         } | ${
           row.converted_amount ? row.converted_amount.toFixed(2) : 'N/A'
-        } | ${row.category} | ${row.description || 'N/A'} |\n`;
+        } | ${row.category} |\n`;
       }
 
       ctx.reply(`Транзакции за сегодня (${today}):\n\`\`\`\n${table}\n\`\`\``, {

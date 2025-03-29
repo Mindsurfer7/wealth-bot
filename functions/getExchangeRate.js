@@ -64,17 +64,19 @@ async function getExchangeRate(currency, db) {
             return reject(new Error(`Database error: ${err.message}`));
           }
 
-          if (row) {
-            console.log(`Rate found in database for ${currency}: ${row.rate}`);
-            return resolve(row.rate);
-            // return resolve({
-            //   rate: row.rate,
-            //   operationType: 'fiat', //bug, needs to update the db
-            // });
-          }
-
-          // Если курса нет в базе, запрашиваем его
           try {
+            if (row) {
+              console.log(
+                `Rate found in database for ${currency}: ${row.rate}`,
+              );
+              return resolve(row.rate);
+              // return resolve({
+              //   rate: row.rate,
+              //   operationType: 'fiat', //bug, needs to update the db
+              // });
+            }
+
+            // Если курса нет в базе, запрашиваем его
             console.log(`Fetching rate for ${currency} from currency-api`);
             const response = await axios.get(
               `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/rub.json`,
@@ -108,7 +110,7 @@ async function getExchangeRate(currency, db) {
                   );
                 }
                 console.log(`Rate for ${currency} saved to database: ${rate}`);
-                resolve(row.rate);
+                resolve(rate);
 
                 // resolve({
                 //   rate,
