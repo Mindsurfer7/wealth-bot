@@ -21,7 +21,7 @@ async function getExchangeRate(currency, db) {
       );
     }
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0].replace(/-/g, '.');
     const currencyLabel = CURRENCY_MAP[currency];
     console.log(`Fetching exchange rate for ${currency} on ${today}`);
 

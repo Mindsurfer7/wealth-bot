@@ -15,7 +15,8 @@ async function addTransaction(ctx, data, db, pendingTransactions) {
       );
     }
 
-    data.date = data.date || new Date().toISOString().split('T')[0];
+    data.date =
+      data.date || new Date().toISOString().split('T')[0].replace(/-/g, '.');
     const rate = await getExchangeRate(data.currency, db);
 
     if (operationTypeCrypto) {

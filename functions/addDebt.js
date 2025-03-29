@@ -32,7 +32,7 @@ const processDebt = async (text, db, openai, ctx) => {
       );
     }
 
-    data.date = new Date().toISOString().split('T')[0];
+    data.date = new Date().toISOString().split('T')[0].replace(/-/g, '.');
     const userId = ctx.chat.id;
     console.log('userId:', userId, 'date:', data.date);
 

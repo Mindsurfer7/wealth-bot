@@ -1,7 +1,7 @@
 const getTxTypeName = require('../utils/getTxTypeName');
 
 const sendTodayReport = (db, ctx) => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0].replace(/-/g, '.');
   const userId = ctx.chat.id; // Получаем user_id
 
   db.all(
